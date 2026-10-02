@@ -31,12 +31,17 @@ public partial class App : Application
             args.Handled = true;
         };
 
+        // The installer's uninstaller calls "USBMon.exe --exit" to ask a running instance to
+        // shut down cleanly before taskkill. This must never fall through to normal startup:
+        // if nothing is running to signal (e.g. it already crashed or was force-killed), the
+        // correct behavior is still to exit immediately, not launch a fresh tray instance that
+        // the uninstaller then waits on forever.
+        bool isExitRequest = e.Args.Contains("--exit", StringComparer.OrdinalIgnoreCase);
+
         _singleInstanceMutex = new Mutex(initiallyOwned: true, @"Local\USBMon.SingleInstance", out bool createdNew);
         if (!createdNew)
         {
-            // The installer's uninstaller calls "USBMon.exe --exit" to ask the running
-            // instance to shut down cleanly before taskkill; anything else just shows it.
-            string eventName = e.Args.Contains("--exit", StringComparer.OrdinalIgnoreCase) ? ExitEventName : ShowEventName;
+            string eventName = isExitRequest ? ExitEventName : ShowEventName;
             try
             {
                 using var handle = EventWaitHandle.OpenExisting(eventName);
@@ -46,6 +51,13 @@ public partial class App : Application
             {
                 // Existing instance may not have created the handle yet; nothing more we can do.
             }
+            Shutdown();
+            return;
+        }
+
+        if (isExitRequest)
+        {
+            // We just became the only instance, so there was nothing running to exit.
             Shutdown();
             return;
         }

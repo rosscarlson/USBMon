@@ -19,6 +19,7 @@ public partial class MainWindow : Window
     private readonly List<IEventFilter> _activeFilters = new();
     private readonly AppSettings _settings;
     private bool _suppressThemeEvent;
+    private bool _wasShown;
 
     public bool AllowClose { get; set; }
 
@@ -51,6 +52,14 @@ public partial class MainWindow : Window
         }
 
         Loaded += (_, _) => ApplyInitialSort();
+        IsVisibleChanged += (_, e) =>
+        {
+            // Window geometry/column widths are only meaningful once the window has actually
+            // been shown and laid out — a tray-only session that never opens it must not
+            // overwrite good saved values with unmeasured defaults (e.g. DataGrid column
+            // ActualWidth before a layout pass reads as a few px, not its real XAML width).
+            if (e.NewValue is true) _wasShown = true;
+        };
 
         _suppressThemeEvent = true;
         ThemeBox.SelectedIndex = settings.Theme switch
@@ -144,26 +153,31 @@ public partial class MainWindow : Window
         var settings = SettingsManager.Load();
         settings.Theme = ThemeManager.Choice;
 
-        if (WindowState == WindowState.Normal)
+        // A tray-only session that never showed the window has nothing real to report for
+        // geometry/columns/sort — never clobber good saved values with unmeasured defaults.
+        if (_wasShown)
         {
-            settings.WindowX = (int)Left;
-            settings.WindowY = (int)Top;
-            settings.WindowWidth = (int)Width;
-            settings.WindowHeight = (int)Height;
-            settings.WindowMaximized = false;
-        }
-        else
-        {
-            settings.WindowMaximized = WindowState == WindowState.Maximized;
-        }
+            if (WindowState == WindowState.Normal)
+            {
+                settings.WindowX = (int)Left;
+                settings.WindowY = (int)Top;
+                settings.WindowWidth = (int)Width;
+                settings.WindowHeight = (int)Height;
+                settings.WindowMaximized = false;
+            }
+            else
+            {
+                settings.WindowMaximized = WindowState == WindowState.Maximized;
+            }
 
-        settings.ColumnWidths = EventGrid.Columns.Select(c => (int)c.ActualWidth).ToList();
+            settings.ColumnWidths = EventGrid.Columns.Select(c => (int)c.ActualWidth).ToList();
 
-        var sortedColumn = EventGrid.Columns.FirstOrDefault(c => c.SortDirection != null);
-        if (sortedColumn != null)
-        {
-            settings.SortColumn = EventGrid.Columns.IndexOf(sortedColumn);
-            settings.SortAscending = sortedColumn.SortDirection == ListSortDirection.Ascending;
+            var sortedColumn = EventGrid.Columns.FirstOrDefault(c => c.SortDirection != null);
+            if (sortedColumn != null)
+            {
+                settings.SortColumn = EventGrid.Columns.IndexOf(sortedColumn);
+                settings.SortAscending = sortedColumn.SortDirection == ListSortDirection.Ascending;
+            }
         }
 
         SettingsManager.Save(settings);

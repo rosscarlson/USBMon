@@ -58,22 +58,26 @@
 
         <!-- Event grid -->
         <Border Grid.Row="3" Style="{StaticResource Card}" Padding="0">
-            <DataGrid x:Name="EventGrid" BorderThickness="0"
+            <DataGrid x:Name="EventGrid" BorderThickness="0" HorizontalScrollBarVisibility="Auto"
                       RowStyle="{StaticResource EventRowStyle}"
                       MouseDoubleClick="EventGrid_MouseDoubleClick">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Timestamp" Binding="{Binding Timestamp}" Width="150"/>
-                    <DataGridTextColumn Header="Event" Binding="{Binding Event}" Width="100"/>
-                    <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="220"/>
-                    <DataGridTextColumn Header="Manufacturer" Binding="{Binding Manufacturer}" Width="130"/>
-                    <DataGridTextColumn Header="VID" Binding="{Binding VendorId}" Width="60"/>
-                    <DataGridTextColumn Header="PID" Binding="{Binding ProductId}" Width="60"/>
-                    <DataGridTextColumn Header="Revision" Binding="{Binding Revision}" Width="70"/>
-                    <DataGridTextColumn Header="Serial number" Binding="{Binding SerialNumber}" Width="140"/>
-                    <DataGridTextColumn Header="Device class" Binding="{Binding DeviceClass}" Width="100"/>
-                    <DataGridTextColumn Header="Driver/service" Binding="{Binding Service}" Width="110"/>
-                    <DataGridTextColumn Header="Location" Binding="{Binding Location}" Width="150"/>
-                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="150"/>
+                    <!-- Explicit MinWidth on every column: without it, WPF's DataGrid silently
+                         compresses fixed-width columns down to an illegible ~20px floor rather
+                         than showing a horizontal scrollbar when the window is narrower than the
+                         columns' combined preferred width. -->
+                    <DataGridTextColumn Header="Timestamp" Binding="{Binding Timestamp}" Width="150" MinWidth="110"/>
+                    <DataGridTextColumn Header="Event" Binding="{Binding Event}" Width="100" MinWidth="90"/>
+                    <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="220" MinWidth="120"/>
+                    <DataGridTextColumn Header="Manufacturer" Binding="{Binding Manufacturer}" Width="130" MinWidth="100"/>
+                    <DataGridTextColumn Header="VID" Binding="{Binding VendorId}" Width="60" MinWidth="50"/>
+                    <DataGridTextColumn Header="PID" Binding="{Binding ProductId}" Width="60" MinWidth="50"/>
+                    <DataGridTextColumn Header="Revision" Binding="{Binding Revision}" Width="85" MinWidth="75"/>
+                    <DataGridTextColumn Header="Serial number" Binding="{Binding SerialNumber}" Width="140" MinWidth="100"/>
+                    <DataGridTextColumn Header="Device class" Binding="{Binding DeviceClass}" Width="100" MinWidth="90"/>
+                    <DataGridTextColumn Header="Driver/service" Binding="{Binding Service}" Width="115" MinWidth="105"/>
+                    <DataGridTextColumn Header="Location" Binding="{Binding Location}" Width="150" MinWidth="90"/>
+                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="150" MinWidth="100"/>
                     <DataGridTextColumn Header="Device instance ID" Binding="{Binding InstanceId}" Width="*" MinWidth="260"/>
                 </DataGrid.Columns>
             </DataGrid>

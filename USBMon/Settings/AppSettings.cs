@@ -7,7 +7,7 @@ public sealed class AppSettings
 
     public int WindowX { get; set; } = -1;
     public int WindowY { get; set; } = -1;
-    public int WindowWidth { get; set; } = 1100;
+    public int WindowWidth { get; set; } = 1400;
     public int WindowHeight { get; set; } = 600;
     public bool WindowMaximized { get; set; } = false;
 
